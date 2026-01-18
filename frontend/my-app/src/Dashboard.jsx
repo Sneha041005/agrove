@@ -6,7 +6,7 @@ export default function Dashboard() {
 
   const logout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    navigate("/login");
   };
 
   return (
