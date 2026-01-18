@@ -1,25 +1,45 @@
-import React from "react";
-import "./styles.css"; // keep using your external stylesheet
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import "./styles.css";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const [activities, setActivities] = useState([]);
+
+  useEffect(() => {
+    if (token) {
+      fetch("http://localhost:5000/api/activity/recent", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then(res => res.json())
+        .then(data => setActivities(data))
+        .catch(() => {});
+    }
+  }, [token]);
+
+  const goProtected = (path) => {
+    if (!token) navigate("/login");
+    else navigate(path);
+  };
+
   return (
     <div className="card-container">
       {/* Header */}
       <header className="header">
         <div className="logo-text">
           <i className="fas fa-leaf logo-icon"></i>
-          <span className="app-name">Agro-AI</span>
+          <span className="app-name">Agrove</span>
         </div>
 
-        {/* LOGIN Button */}
-        <Link to="/login" className="language-button">
-          LOGIN
-        </Link>
+        {!token ? (
+          <Link to="/login" className="language-button">LOGIN</Link>
+        ) : (
+          <Link to="/dashboard" className="language-button">DASHBOARD</Link>
+        )}
       </header>
-
-      {/* Subtitle */}
-      <p className="subtitle">Smart Agricultural Assistant</p>
 
       {/* Weather Section */}
       <div className="weather-card">
@@ -31,28 +51,41 @@ export default function Home() {
       </div>
 
       {/* Buttons */}
-      <Link to="/cameraoptions" className="action-button scan-button">
-  <i className="fas fa-camera"></i> SCAN CROP FOR DISEASE
-</Link>
+      <button
+        className="action-button scan-button"
+        onClick={() => goProtected("/cameraoptions")}
+      >
+        <i className="fas fa-camera"></i> SCAN CROP FOR DISEASE
+      </button>
 
-
-    <Link to="/voiceinput" className="action-button voice-button">
-  <i className="fas fa-microphone"></i> ASK AGRO-AI FOR ADVICE
-</Link>
+      <button
+        className="action-button voice-button"
+        onClick={() => goProtected("/voiceinput")}
+      >
+        <i className="fas fa-microphone"></i> ASK AGRO-AI FOR ADVICE
+      </button>
 
       {/* Recent Activity */}
       <div className="recent-activity">
         <h3 className="activity-title">Recent Activity</h3>
-        <div className="activity-item">
-          <span>Wheat Rust</span>
-          <span className="activity-date">*10/08/2024</span>
-          <i className="fas fa-chevron-right"></i>
-        </div>
-        <div className="activity-item">
-          <span>Maize Fertilizer</span>
-          <span className="activity-date">*09/08/2024</span>
-          <i className="fas fa-chevron-right"></i>
-        </div>
+
+        {!token && (
+          <p className="activity-date">Login to view your activity</p>
+        )}
+
+        {token && activities.length === 0 && (
+          <p className="activity-date">No recent activity</p>
+        )}
+
+        {activities.map((item, index) => (
+          <div className="activity-item" key={index}>
+            <span>{item.title}</span>
+            <span className="activity-date">
+              {new Date(item.date).toLocaleDateString()}
+            </span>
+            <i className="fas fa-chevron-right"></i>
+          </div>
+        ))}
       </div>
     </div>
   );

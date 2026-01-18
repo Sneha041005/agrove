@@ -5,6 +5,7 @@ import Login from "./Login";
 import CameraOptions from "./CameraOptions";
 import CameraCapture from "./CameraCapture";
 import VoiceInput from "./VoiceInput";
+import Dashboard from "./Dashboard";
 function App() {
   return (
     <BrowserRouter>
@@ -14,6 +15,7 @@ function App() {
         <Route path="/cameraoptions" element={<CameraOptions/>}/>
         <Route path="/cameracapture" element={<CameraCapture/>}/>
         <Route path="/voiceinput" element={<VoiceInput />} /> 
+        <Route path="/Dashboard" element={<Dashboard/>}/>
         
       </Routes>
     </BrowserRouter>

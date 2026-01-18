@@ -51,7 +51,7 @@ export default function VoiceInput() {
       <header className="header">
         <div className="logo-text">
           <i className="fas fa-leaf logo-icon"></i>
-          <span className="app-name">Agro-AI</span>
+          <span className="app-name">Agrove</span>
         </div>
       </header>
 
