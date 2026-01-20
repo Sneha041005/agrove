@@ -27,6 +27,24 @@ export default function AddActivity() {
       setSuccess("");
     }
   };
+  async function addActivity() {
+  const response = await fetch("http://localhost:5000/api/activities", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      field: selectedFieldId,   // from your state
+      type: activityType,       // from dropdown
+      details: detailsText      // from input
+    })
+  });
+
+  const data = await response.json();
+  console.log("Activity created:", data);
+}
+<button onClick={addActivity}>Add Activity</button>
+
 
   return (
     <>
