@@ -7,22 +7,27 @@ export default function Home() {
   const token = localStorage.getItem("token");
   const [activities, setActivities] = useState([]);
 
+  // Fetch recent activities if logged in
   useEffect(() => {
     if (token) {
-      fetch("http://localhost:5000/api/activity/recent", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      fetch("http://localhost:5000/api/activities", {
+        headers: { Authorization: `Bearer ${token}` },
       })
         .then(res => res.json())
         .then(data => setActivities(data))
-        .catch(() => {});
+        .catch(() => setActivities([]));
     }
   }, [token]);
 
-  const goProtected = (path) => {
-    if (!token) navigate("/login");
-    else navigate(path);
+  // Navigate to pages
+  const goToPage = (path) => {
+    navigate(path);
+  };
+
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.reload(); // refresh to update UI
   };
 
   return (
@@ -35,9 +40,14 @@ export default function Home() {
         </div>
 
         {!token ? (
-          <Link to="/login" className="language-button">LOGIN</Link>
+          <>
+            <Link to="/login" className="language-button">LOGIN</Link>
+            <Link to="/signup" className="language-button">SIGN UP</Link>
+          </>
         ) : (
-          <Link to="/dashboard" className="language-button">DASHBOARD</Link>
+          <button className="language-button" onClick={handleLogout}>
+            LOGOUT
+          </button>
         )}
       </header>
 
@@ -50,28 +60,38 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Buttons */}
+      {/* Action Buttons */}
       <button
         className="action-button scan-button"
-        onClick={() => goProtected("/cameraoptions")}
+        onClick={() => goToPage("/cameraoptions")}
       >
         <i className="fas fa-camera"></i> SCAN CROP FOR DISEASE
       </button>
 
       <button
         className="action-button voice-button"
-        onClick={() => goProtected("/voiceinput")}
+        onClick={() => goToPage("/voiceinput")}
       >
-        <i className="fas fa-microphone"></i> ASK AGRO-AI FOR ADVICE
+        <i className="fas fa-microphone"></i> ASK AGROVE FOR ADVICE
       </button>
+
+      {/* Farm/Field/Crop/Soil Buttons */}
+      <div className="home-navigation">
+        <button onClick={() => goToPage("/add-farm")}>Add Farm</button>
+        <button onClick={() => goToPage("/add-field")}>Add Field</button>
+        <button onClick={() => goToPage("/add-crop")}>Add Crop</button>
+        <button onClick={() => goToPage("/add-soil")}>Add Soil</button>
+        <button onClick={() => goToPage("/farms")}>View Farms</button>
+        <button onClick={() => goToPage("/fields")}>View Fields</button>
+        <button onClick={() => goToPage("/crops")}>View Crops</button>
+        <button onClick={() => goToPage("/soil")}>View Soil</button>
+      </div>
 
       {/* Recent Activity */}
       <div className="recent-activity">
         <h3 className="activity-title">Recent Activity</h3>
 
-        {!token && (
-          <p className="activity-date">Login to view your activity</p>
-        )}
+        {!token && <p className="activity-date">Login to view your activity</p>}
 
         {token && activities.length === 0 && (
           <p className="activity-date">No recent activity</p>
@@ -79,7 +99,7 @@ export default function Home() {
 
         {activities.map((item, index) => (
           <div className="activity-item" key={index}>
-            <span>{item.title}</span>
+            <span>{item.type}: {item.description}</span>
             <span className="activity-date">
               {new Date(item.date).toLocaleDateString()}
             </span>

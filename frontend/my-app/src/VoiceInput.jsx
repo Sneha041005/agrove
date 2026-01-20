@@ -21,7 +21,7 @@ export default function VoiceInput() {
     recognition.interimResults = false;
     recognitionRef.current = recognition;
 
-    recognition.onstart = () => setMessage("🎤 Listening...");
+    recognition.onstart = () => setMessage("Listening...");
     recognition.onresult = (event) => {
       const speechResult = event.results[0][0].transcript;
       setMessage(`You said: "${speechResult}"`);
@@ -58,14 +58,14 @@ export default function VoiceInput() {
       <main className="main-content">
         <h1 className="instruction-text">Speak or Type Your Question</h1>
 
-        {/* 🎤 Voice Input */}
+        {/* Voice Input */}
         <button className="primary-action-button" onClick={handleVoiceInput}>
           <i className="fas fa-microphone"></i> TAP TO SPEAK
         </button>
 
         <p id="resultText" className="subtitle">{message}</p>
 
-        {/* ⌨️ Manual Text Input */}
+        {/*Manual Text Input */}
         <div className="manual-input">
           <input
             type="text"

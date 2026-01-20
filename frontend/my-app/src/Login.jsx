@@ -1,27 +1,44 @@
 import React, { useState } from "react";
 import "./styles.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false); 
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    const res = await fetch("http://localhost:5000/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-      navigate("/dashboard");
-    } else {
-      alert("Invalid credentials");
+    if (!email || !password) {
+      setError("Please enter email and password");
+      return;
     }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        navigate("/dashboard"); // redirect to dashboard
+      } else {
+        setError(data.message || "Invalid credentials");
+      }
+    } catch (err) {
+      setError("Server error. Try again later.");
+      console.error(err);
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -40,7 +57,9 @@ export default function Login() {
         textAlign: "center",
         width: "320px",
       }}>
-        <h1 style={{ color: "#4CAF50", marginBottom: "30px" }}>Agro-AI Login</h1>
+        <h1 style={{ color: "#4CAF50", marginBottom: "30px" }}> Login</h1>
+
+        {error && <p style={{ color: "red", marginBottom: "10px" }}>{error}</p>}
 
         <input
           type="text"
@@ -75,6 +94,7 @@ export default function Login() {
         <button
           onClick={handleLogin}
           className="login-button"
+          disabled={loading}
           style={{
             backgroundColor: "#388E3C",
             color: "white",
@@ -84,16 +104,16 @@ export default function Login() {
             fontSize: "16px",
             border: "none",
             marginTop: "10px",
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
           }}
         >
-          LOG IN
+          {loading ? "Logging in..." : "LOG IN"}
         </button>
 
         <p style={{ marginTop: "20px" }}>
-          <span style={{ color: "#4CAF50" }}>
+          <Link to="/signup" style={{ color: "#4CAF50", textDecoration: "none" }}>
             New User? Sign Up
-          </span>
+          </Link>
         </p>
       </div>
     </div>

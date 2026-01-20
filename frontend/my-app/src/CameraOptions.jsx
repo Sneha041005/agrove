@@ -8,7 +8,7 @@ export default function ScanOptions() {
       <header className="header">
         <div className="logo-text">
           <i className="fas fa-leaf logo-icon"></i>
-          <span className="app-name">Agro-AI</span>
+          <span className="app-name">Agrove</span>
         </div>
         <Link to="/" className="language-button">HOME</Link>
       </header>

@@ -5,7 +5,8 @@ import Login from "./Login";
 import CameraOptions from "./CameraOptions";
 import CameraCapture from "./CameraCapture";
 import VoiceInput from "./VoiceInput";
-import Dashboard from "./Dashboard";
+import Signup from "./Signup";
+import AddFarm from "./pages/AddFarm";
 function App() {
   return (
     <BrowserRouter>
@@ -15,7 +16,9 @@ function App() {
         <Route path="/cameraoptions" element={<CameraOptions/>}/>
         <Route path="/cameracapture" element={<CameraCapture/>}/>
         <Route path="/voiceinput" element={<VoiceInput />} /> 
-        <Route path="/Dashboard" element={<Dashboard/>}/>
+        <Route path="/Signup" element={<Signup/>}></Route>
+        <Route path="/add-farm" element={<AddFarm />} />
+
         
       </Routes>
     </BrowserRouter>

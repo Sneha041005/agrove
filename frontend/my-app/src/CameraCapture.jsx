@@ -7,7 +7,7 @@ export default function CameraCapture() {
   const photoRef = useRef(null);
   const [hasPhoto, setHasPhoto] = useState(false);
 
-  //  Start the camera
+  
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -19,7 +19,6 @@ export default function CameraCapture() {
     }
   };
 
-  //  Capture a photo
   const takePhoto = () => {
     const width = 320;
     const height = 240;
@@ -35,7 +34,7 @@ export default function CameraCapture() {
     setHasPhoto(true);
   };
 
-  // Retake photo (clear the canvas)
+ 
   const closePhoto = () => {
     const photo = photoRef.current;
     const ctx = photo.getContext("2d");
