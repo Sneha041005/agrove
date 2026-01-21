@@ -12,18 +12,22 @@ router.get("/:fieldId", async (req, res) => {
 
     const crop = await Crop.findOne({ field: fieldId });
     const soil = await Soil.findOne({ field: fieldId });
-    const recentActivities = await Activity.find({ field: fieldId })
+    const activities = await Activity.find({ field: fieldId })
       .sort({ date: -1 })
       .limit(5);
 
     const advisory = generateAdvisory({
       crop,
       soil,
-      recentActivities
+      activities
     });
 
-    res.json({ advisory });
-  } catch (err) {
+    res.json({
+      success: true,
+      advisory
+    });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Failed to generate advisory" });
   }
 });

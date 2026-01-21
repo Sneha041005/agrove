@@ -10,7 +10,15 @@ import fieldRoutes from "./routes/field.js";
 import cropRoutes from "./routes/crop.js";
 import activityRoutes from "./routes/activity.js";
 import soilRoutes from "./routes/soil.js";
+<<<<<<< HEAD
 import adviceRoutes from "./routes/advice.js";
+=======
+import marketAdvisoryRoutes from "./routes/marketAdvisory.js";
+import diseaseRoutes from "./routes/disease.js";
+import diseaseHistoryRoutes from "./routes/diseaseHistory.js";
+
+
+>>>>>>> 562b258b9676e76039c1b010ca3fc572f443197a
 
 dotenv.config();
 
@@ -32,7 +40,15 @@ app.use("/api/fields", fieldRoutes);
 app.use("/api/crops", cropRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/soil", soilRoutes);
+<<<<<<< HEAD
 app.use("/api/advice", adviceRoutes);
+=======
+app.use("/api/market-advisory", marketAdvisoryRoutes);
+app.use("/api/disease", diseaseRoutes);
+app.use("/api/disease-history", diseaseHistoryRoutes);
+
+
+>>>>>>> 562b258b9676e76039c1b010ca3fc572f443197a
 
 // DATABASE CONNECTION
 mongoose
