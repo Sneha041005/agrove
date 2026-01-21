@@ -1,11 +1,12 @@
 import AdvisoryModel from "../models/advisory.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import dotenv from "dotenv";
 
-/**
- * Calculates the growth stage based on sowing date
- */
+dotenv.config();
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
 function getCropStage(sowingDate) {
   if (!sowingDate) return "sowing";
-  
   const now = new Date();
   const start = new Date(sowingDate);
   const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
@@ -16,50 +17,50 @@ function getCropStage(sowingDate) {
   return "maturity";
 }
 
-/**
- * Main logic to generate advice array
- */
 export async function generateAdvisory({ crop, soil, activities }) {
-  const adviceList = [];
+  let adviceList = [];
 
-  // 1. Check if basic data exists
   if (!crop || !soil) {
     return ["Please add crop and soil details to receive personalized advisory."];
   }
 
-  // 2. Identify current status
   const stage = getCropStage(crop.sowingDate);
-  const cropName = crop.name.toLowerCase();
-  const soilType = (soil.soilType || soil.type || "unknown").toLowerCase();
+  const cropName = crop.name;
+  const soilType = (soil.soilType || soil.type || "unknown");
 
   try {
-    // 3. Fetch matching expert tips from the Database
+    // 1. Fetch from Database (Your existing logic)
     const dbSuggestions = await AdvisoryModel.find({
-      crop: cropName,
+      crop: cropName.toLowerCase(),
       stage: stage
     });
-
-    // Add DB tips to our list
     dbSuggestions.forEach(item => adviceList.push(item.suggestion));
 
-    // 4. Real-time Activity Checks
-    const hasRecentIrrigation = activities?.some(
-      (a) => a.type?.toLowerCase() === "irrigation"
-    );
-
+    // 2. Activity Check (Your existing logic)
+    const hasRecentIrrigation = activities?.some(a => a.type?.toLowerCase() === "irrigation");
     if (!hasRecentIrrigation && stage !== "maturity") {
-      adviceList.push(`Warning: No recent irrigation recorded. Ensure ${cropName} has adequate moisture during the ${stage} stage.`);
+      adviceList.push(`Warning: No recent irrigation recorded for ${cropName} in ${stage} stage.`);
     }
 
-    // 5. Fallback if no specific tips were found
-    if (adviceList.length === 0) {
-      adviceList.push(`Your ${cropName} is currently in the ${stage} stage. Continue regular field scouting for pests.`);
-    }
+    // 3. ✨ NEW: Add Gemini AI Strategic Insight
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const aiPrompt = `Act as an expert agronomist. 
+      Crop: ${cropName}, 
+      Soil: ${soilType}, 
+      Current Stage: ${stage}, 
+      Recent Activities: ${activities.map(a => a.type).join(", ") || "None"}.
+      Provide one unique, high-value expert tip for this specific scenario.`;
+
+    const result = await model.generateContent(aiPrompt);
+    const aiTip = result.response.text();
+    
+    // Add the AI tip to the top with a special tag
+    adviceList.unshift(`🤖 AI INSIGHT: ${aiTip}`);
 
     return adviceList;
 
   } catch (error) {
     console.error("Advisory Engine Error:", error);
-    return ["Unable to fetch expert tips. Please check soil moisture levels manually."];
+    return adviceList.length > 0 ? adviceList : ["Error generating AI tips, follow local database suggestions."];
   }
 }

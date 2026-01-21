@@ -18,11 +18,10 @@ import ViewFarms from "./view/ViewFarms";
 import ViewFields from "./view/ViewFields";
 import ViewCrops from "./view/ViewCrops";
 import ViewSoil from "./view/ViewSoil";
-import ViewActivities from "./view/ViewActivity";
+import ViewActivity from "./view/ViewActivity";
 
 import ViewAdvisory from "./view/ViewAdvisory"; // NEW
-import Advisory from "../../components/Advisory";
-
+import Advisory from "../components/Advisory";
 function App() {
   // Placeholder for selected fieldId; we’ll update this dynamically later
   const [selectedFieldId, setSelectedFieldId] = useState(null);
@@ -49,7 +48,7 @@ function App() {
         />
         <Route path="/crops" element={<ViewCrops />} />
         <Route path="/soil" element={<ViewSoil />} />
-        <Route path="/activities" element={<ViewActivities />} />
+        <Route path="/activity" element={<ViewActivity />} />
         <Route path="/advisory" element={<Advisory/>}/>
 
         {/* NEW Advisory Route */}

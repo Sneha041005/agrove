@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+
 
 const Advisory = ({ fieldId }) => {
   const [advice, setAdvice] = useState([]);
@@ -23,10 +24,10 @@ const Advisory = ({ fieldId }) => {
 
   return (
     <div className="advisory-card">
-      <h3>🌱 Smart Advisory</h3>
+      <h3> Smart Advisory</h3>
       <ul>
         {advice.map((item, index) => (
-          <li key={index} className="advice-item">✅ {item}</li>
+          <li key={index} className="advice-item">{item}</li>
         ))}
       </ul>
     </div>
