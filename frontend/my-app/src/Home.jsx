@@ -9,7 +9,7 @@ export default function Home() {
 
   
   useEffect(() => {
-    fetch("http://localhost:5000/api/activities")
+    fetch("http://localhost:5000/api/activity")
       .then(res => res.json())
       .then(data => setActivities(data))
       .catch(() => setActivities([]));

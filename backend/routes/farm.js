@@ -1,44 +1,57 @@
 import express from "express";
-import { upload } from "../utils/upload.js";
-import { detectDisease } from "../services/diseaseEngine.js";
-import DiseaseHistory from "../models/diseaseHistory.js";
+import Farm from "../models/farm.js";
+import upload from "../utils/upload.js"; // multer config
 
 const router = express.Router();
 
-router.post(
-  "/",
-  upload.single("image"),
-  async (req, res) => {
-    try {
-      const { cropName, symptoms, fieldId } = req.body;
+// ------------------ GET ROUTES ------------------
 
-      const result = detectDisease({
-        cropName,
-        symptoms: symptoms ? JSON.parse(symptoms) : []
-      });
-
-      const record = await DiseaseHistory.create({
-        field: fieldId,
-        cropName,
-        disease: result.disease,
-        confidence: result.confidence,
-        advice: result.advice,
-        image: req.file?.filename
-      });
-
-      res.json({
-        success: true,
-        result,
-        saved: true,
-        recordId: record._id
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({
-        message: "Failed to save disease history"
-      });
-    }
+// GET all farms
+router.get("/", async (req, res) => {
+  try {
+    const farms = await Farm.find(); // fetch all farms from DB
+    res.json(farms);
+  } catch (err) {
+    console.error("Error fetching farms:", err);
+    res.status(500).json({ error: "Server error" });
   }
-);
+});
+
+// GET single farm by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const farm = await Farm.findById(req.params.id);
+    if (!farm) return res.status(404).json({ error: "Farm not found" });
+    res.json(farm);
+  } catch (err) {
+    console.error("Error fetching farm:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ------------------ POST ROUTES ------------------
+
+// POST with image upload
+router.post("/", upload.single("image"), async (req, res) => {
+  try {
+    const farm = await Farm.create({
+      ...req.body,
+      image: req.file ? req.file.filename : null,
+    });
+    res.status(201).json(farm);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST without image
+router.post("/no-image", async (req, res) => {
+  try {
+    const farm = await Farm.create(req.body);
+    res.status(201).json(farm);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 export default router;

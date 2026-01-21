@@ -1,25 +1,11 @@
 import express from "express";
 import Field from "../models/field.js";
-import Advisory from "../models/advisory.js";
 import Activity from "../models/activity.js";
+import { generateAdvisory } from "../services/advisoryEngine.js";
 
 const router = express.Router();
 
-// Function to calculate growth stage based on sowing date
-function calculateStage(sowingDate) {
-  const today = new Date();
-  const sowDate = new Date(sowingDate);
-
-  const diffTime = today - sowDate;
-  const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-  if (days <= 15) return "Sowing";
-  if (days <= 45) return "Vegetative";
-  if (days <= 75) return "Flowering";
-  return "Maturity";
-}
-
-// GET suggestions for a field
+// GET advisory suggestions for a field
 router.get("/:fieldId/suggestions", async (req, res) => {
   try {
     const field = await Field.findById(req.params.fieldId)
@@ -30,47 +16,36 @@ router.get("/:fieldId/suggestions", async (req, res) => {
       return res.status(404).json({ message: "Field not found" });
     }
 
-    if (!field.sowingDate) {
-      return res.status(400).json({ message: "Sowing date not found" });
+    if (!field.crop || !field.soil) {
+      return res
+        .status(400)
+        .json({ message: "Crop or soil details missing" });
     }
 
-    const stage = calculateStage(field.sowingDate);
+    if (!field.crop.sowingDate) {
+      return res
+        .status(400)
+        .json({ message: "Sowing date not found" });
+    }
 
-    const advisories = await Advisory.find({
-      crop: field.crop.name,
-      soilType: field.soil.type,
-      stage: stage,
+    // Activities should be linked to field OR crop — adjust if needed
+    const activities = await Activity.find({
+      field: field._id,
+    }).sort({ date: -1 });
+
+    const advisory = generateAdvisory({
+      crop: field.crop,
+      soil: field.soil,
+      activities,
     });
 
     res.json({
-      stage,
-      suggestions: advisories,
+      success: true,
+      advisory,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to fetch suggestions" });
-  }
-});
-
-// CREATE a new field
-router.post("/", async (req, res) => {
-  try {
-    const field = await Field.create(req.body);
-    res.status(201).json(field);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to create field" });
-  }
-});
-
-// GET all fields
-router.get("/", async (req, res) => {
-  try {
-    const fields = await Field.find().populate("crop").populate("soil");
-    res.json(fields);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to fetch fields" });
+    res.status(500).json({ message: "Failed to generate advisory" });
   }
 });
 

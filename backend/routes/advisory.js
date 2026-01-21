@@ -6,29 +6,42 @@ import { generateAdvisory } from "../services/advisoryEngine.js";
 
 const router = express.Router();
 
+// GET /api/advisory/:fieldId
 router.get("/:fieldId", async (req, res) => {
   try {
     const { fieldId } = req.params;
 
+    // 1. Fetch related data using the fieldId
+    // We use findOne because each field typically has one active crop/soil record
     const crop = await Crop.findOne({ field: fieldId });
     const soil = await Soil.findOne({ field: fieldId });
-    const activities = await Activity.find({ field: fieldId })
+    
+    // Fetch last 5 activities to check for recent irrigation/fertilization
+    const recentActivities = await Activity.find({ field: fieldId })
       .sort({ date: -1 })
       .limit(5);
 
-    const advisory = generateAdvisory({
+    // 2. Generate the advisory using our engine logic
+    const advisory = await generateAdvisory({
       crop,
       soil,
-      activities
+      activities: recentActivities
     });
 
+    // 3. Return response
     res.json({
       success: true,
+      fieldId,
       advisory
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to generate advisory" });
+
+  } catch (err) {
+    console.error("Advisory Route Error:", err);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to generate advisory",
+      error: err.message 
+    });
   }
 });
 

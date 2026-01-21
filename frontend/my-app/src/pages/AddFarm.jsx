@@ -5,6 +5,7 @@ export default function AddFarm() {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [size, setSize] = useState("");
+  const [image, setImage] = useState(null); // 👈 new state for image
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,10 +20,15 @@ export default function AddFarm() {
     setError("");
 
     try {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("location", location);
+      formData.append("size", size);
+      if (image) formData.append("image", image); // add file
+
       const res = await fetch("http://localhost:5000/api/farms", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, location, size }),
+        body: formData, // 👈 use FormData
       });
 
       if (!res.ok) {
@@ -141,6 +147,13 @@ export default function AddFarm() {
           placeholder="Size (e.g. 2 acres)"
           value={size}
           onChange={(e) => setSize(e.target.value)}
+        />
+
+        {/* New file input */}
+        <input
+          className="input"
+          type="file"
+          onChange={(e) => setImage(e.target.files[0])}
         />
 
         <button className="button" onClick={submitFarm} disabled={loading}>

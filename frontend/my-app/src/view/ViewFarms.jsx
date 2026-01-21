@@ -8,17 +8,26 @@ export default function ViewFarms() {
   useEffect(() => {
     const fetchFarms = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/farms");
-        if (!res.ok) throw new Error("Failed to fetch farms");
+        const res = await fetch("http://localhost:5000/api/farms", {
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Server error: ${res.status} ${text}`);
+        }
+
         const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("Invalid data format");
         setFarms(data);
       } catch (err) {
-        console.error(err);
+        console.error("Fetch error:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
+
     fetchFarms();
   }, []);
 
@@ -31,13 +40,17 @@ export default function ViewFarms() {
       {farms.length === 0 ? (
         <p>No farms added yet</p>
       ) : (
-        farms.map(farm => (
+        farms.map((farm) => (
           <div
             key={farm._id}
             style={{ border: "1px solid #ccc", padding: 10, marginBottom: 10 }}
           >
-            <p><b>Name:</b> {farm.name}</p>
-            <p><b>Location:</b> {farm.location}</p>
+            <p>
+              <b>Name:</b> {farm.name}
+            </p>
+            <p>
+              <b>Location:</b> {farm.location}
+            </p>
             <small>ID: {farm._id}</small>
           </div>
         ))

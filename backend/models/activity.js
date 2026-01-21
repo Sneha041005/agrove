@@ -1,33 +1,16 @@
-import express from "express";
-import Crop from "../models/crop.js";
-import Soil from "../models/soil.js";
-import Activity from "../models/activity.js";
-import { generateAdvisory } from "../services/advisoryEngine.js";
+import mongoose from "mongoose";
 
-const router = express.Router();
-
-router.get("/:fieldId", async (req, res) => {
-  try {
-    const { fieldId } = req.params;
-
-    const crop = await Crop.findOne({ field: fieldId });
-    const soil = await Soil.findOne({ field: fieldId });
-
-    const recentActivities = await Activity.find({ field: fieldId })
-      .sort({ date: -1 })
-      .limit(5);
-
-    const advisory = generateAdvisory({
-      crop,
-      soil,
-      activities: recentActivities
-    });
-
-    res.json({ advisory });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to generate advisory" });
-  }
+const activitySchema = new mongoose.Schema({
+  field: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Field", 
+    required: true 
+  },
+  type: { type: String, required: true }, // e.g., "irrigation", "fertilization"
+  date: { type: Date, default: Date.now },
+  description: String
 });
 
-export default router;
+// Ensure you are exporting the MODEL, not just the schema
+const Activity = mongoose.model("Activity", activitySchema);
+export default Activity;

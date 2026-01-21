@@ -6,13 +6,17 @@ export default function ViewActivities() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/activities")
+    // Corrected URL to match backend
+    fetch("http://localhost:5000/api/activity/recent")
       .then(res => res.json())
       .then(data => {
         if (!Array.isArray(data)) data = [];
         setActivities(data);
       })
-      .catch(err => setError("Failed to fetch activities"))
+      .catch(err => {
+        console.error(err);
+        setError("Failed to fetch activities");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -26,9 +30,9 @@ export default function ViewActivities() {
         <p>No activities yet</p>
       ) : (
         activities.map(act => (
-          <div key={act._id} style={{ border: "1px solid #ccc", padding: 10, marginBottom: 10 }}>
+          <div key={act._id} style={{ border: "1px solid #ccc", padding: 10, marginBottom: 10, borderRadius: 6 }}>
             <p><b>Type:</b> {act.type}</p>
-            <p><b>Description:</b> {act.description}</p>
+            <p><b>Details:</b> {act.details}</p>
             <p><small>Date: {new Date(act.date).toLocaleDateString()}</small></p>
           </div>
         ))

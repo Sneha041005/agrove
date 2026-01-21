@@ -1,64 +1,65 @@
+import AdvisoryModel from "../models/advisory.js";
+
+/**
+ * Calculates the growth stage based on sowing date
+ */
 function getCropStage(sowingDate) {
-  if (!sowingDate) return "unknown";
+  if (!sowingDate) return "sowing";
+  
+  const now = new Date();
+  const start = new Date(sowingDate);
+  const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
 
-  const days =
-    (Date.now() - new Date(sowingDate)) / (1000 * 60 * 60 * 24);
-
-  if (days < 20) return "germination";
-  if (days < 45) return "vegetative";
-  if (days < 80) return "flowering";
+  if (diffDays < 15) return "sowing";
+  if (diffDays < 60) return "vegetative";
+  if (diffDays < 90) return "flowering";
   return "maturity";
 }
 
-export function generateAdvisory({ crop, soil, activities }) {
-  const advice = [];
+/**
+ * Main logic to generate advice array
+ */
+export async function generateAdvisory({ crop, soil, activities }) {
+  const adviceList = [];
 
+  // 1. Check if basic data exists
   if (!crop || !soil) {
-    return ["Add crop and soil details to receive advisory"];
-  }
-const stage = getCropStage(crop.sowingDate);
-
-// 🌱 Stage-based rules
-if (stage === "germination") {
-  advice.push("Maintain adequate soil moisture during germination stage.");
-}
-
-if (stage === "vegetative") {
-  advice.push("Vegetative stage: ensure nitrogen availability.");
-}
-
-if (stage === "flowering") {
-  advice.push("Flowering stage: avoid water stress and monitor pests.");
-}
-
-  // 🌾 Crop + soil rules
-  if (
-    crop.cropName?.toLowerCase() === "rice" &&
-    soil.soilType === "Clay"
-  ) {
-    advice.push("Ensure proper drainage for rice grown in clay soil.");
+    return ["Please add crop and soil details to receive personalized advisory."];
   }
 
-  // 🚿 Activity-based rules
-  const hasRecentIrrigation = activities?.some(
-    a => a.type === "Irrigation"
-  );
+  // 2. Identify current status
+  const stage = getCropStage(crop.sowingDate);
+  const cropName = crop.name.toLowerCase();
+  const soilType = (soil.soilType || soil.type || "unknown").toLowerCase();
 
-  if (!hasRecentIrrigation) {
-    advice.push("No recent irrigation found. Consider irrigating the field.");
+  try {
+    // 3. Fetch matching expert tips from the Database
+    const dbSuggestions = await AdvisoryModel.find({
+      crop: cropName,
+      stage: stage
+    });
+
+    // Add DB tips to our list
+    dbSuggestions.forEach(item => adviceList.push(item.suggestion));
+
+    // 4. Real-time Activity Checks
+    const hasRecentIrrigation = activities?.some(
+      (a) => a.type?.toLowerCase() === "irrigation"
+    );
+
+    if (!hasRecentIrrigation && stage !== "maturity") {
+      adviceList.push(`Warning: No recent irrigation recorded. Ensure ${cropName} has adequate moisture during the ${stage} stage.`);
+    }
+
+    // 5. Fallback if no specific tips were found
+    if (adviceList.length === 0) {
+      adviceList.push(`Your ${cropName} is currently in the ${stage} stage. Continue regular field scouting for pests.`);
+    }
+
+    return adviceList;
+
+  } catch (error) {
+    console.error("Advisory Engine Error:", error);
+    return ["Unable to fetch expert tips. Please check soil moisture levels manually."];
   }
-
-  const hasFertilizer = activities?.some(
-    a => a.type === "Fertilization"
-  );
-
-  if (!hasFertilizer) {
-    advice.push("Fertilizer not applied recently. Check nutrient requirements.");
-  }
-
-  if (advice.length === 0) {
-    advice.push("Crop conditions look normal. Continue regular monitoring.");
-  }
-
-  return advice;
 }
