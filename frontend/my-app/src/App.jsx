@@ -7,7 +7,17 @@ import CameraCapture from "./CameraCapture";
 import VoiceInput from "./VoiceInput";
 import Signup from "./Signup";
 import AddFarm from "./pages/AddFarm";
+import AddField from "./pages/AddField";
+import AddCrop from "./pages/AddCrop";
+import AddActivity from "./pages/AddActivity";
+import AddSoil from "./pages/AddSoil";
+import ViewFarms from "./view/ViewFarms";
+import ViewFields from "./view/ViewFields";
+import ViewCrops from "./view/ViewCrops";
+import ViewSoil from "./view/ViewSoil";
+import ViewActivities from "./view/ViewActivities";
 function App() {
+
   return (
     <BrowserRouter>
       <Routes>
@@ -18,6 +28,16 @@ function App() {
         <Route path="/voiceinput" element={<VoiceInput />} /> 
         <Route path="/Signup" element={<Signup/>}></Route>
         <Route path="/add-farm" element={<AddFarm />} />
+        <Route path="/add-crops" element={<AddCrop />} />
+        <Route path="/add-fields" element={<AddField />} />
+        <Route path="/add-soil" element={<AddSoil />} />
+        <Route path="/farms" element={<ViewFarms />} />
+        
+        <Route path="/fields" element={<ViewFields />} />
+        <Route path="/crops" element={<ViewCrops />} />
+        <Route path="/soil" element={<ViewSoil />} />
+        <Route path="/activities" element={<ViewActivities />} />
+
 
         
       </Routes>

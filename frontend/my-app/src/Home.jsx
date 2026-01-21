@@ -7,32 +7,26 @@ export default function Home() {
   const token = localStorage.getItem("token");
   const [activities, setActivities] = useState([]);
 
-  // Fetch recent activities if logged in
+  
   useEffect(() => {
-    if (token) {
-      fetch("http://localhost:5000/api/activities", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(res => res.json())
-        .then(data => setActivities(data))
-        .catch(() => setActivities([]));
-    }
-  }, [token]);
+    fetch("http://localhost:5000/api/activities")
+      .then(res => res.json())
+      .then(data => setActivities(data))
+      .catch(() => setActivities([]));
+  }, []);
 
-  // Navigate to pages
   const goToPage = (path) => {
     navigate(path);
   };
 
-  // Logout function
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.reload(); // refresh to update UI
+    window.location.reload();
   };
 
   return (
     <div className="card-container">
-      {/* Header */}
+      
       <header className="header">
         <div className="logo-text">
           <i className="fas fa-leaf logo-icon"></i>
@@ -51,7 +45,7 @@ export default function Home() {
         )}
       </header>
 
-      {/* Weather Section */}
+      {/* Weather Card */}
       <div className="weather-card">
         <i className="fas fa-sun weather-icon"></i>
         <p className="temperature">32°C, Pune, India</p>
@@ -60,52 +54,54 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <button
-        className="action-button scan-button"
-        onClick={() => goToPage("/cameraoptions")}
-      >
-        <i className="fas fa-camera"></i> SCAN CROP FOR DISEASE
-      </button>
+      
+      <div className="main-actions">
+        <button className="action-button scan-button" onClick={() => goToPage("/cameraoptions")}>
+          <i className="fas fa-camera"></i> SCAN CROP FOR DISEASE
+        </button>
 
-      <button
-        className="action-button voice-button"
-        onClick={() => goToPage("/voiceinput")}
-      >
-        <i className="fas fa-microphone"></i> ASK AGROVE FOR ADVICE
-      </button>
-
-      {/* Farm/Field/Crop/Soil Buttons */}
-      <div className="home-navigation">
-        <button onClick={() => goToPage("/add-farm")}>Add Farm</button>
-        <button onClick={() => goToPage("/add-field")}>Add Field</button>
-        <button onClick={() => goToPage("/add-crop")}>Add Crop</button>
-        <button onClick={() => goToPage("/add-soil")}>Add Soil</button>
-        <button onClick={() => goToPage("/farms")}>View Farms</button>
-        <button onClick={() => goToPage("/fields")}>View Fields</button>
-        <button onClick={() => goToPage("/crops")}>View Crops</button>
-        <button onClick={() => goToPage("/soil")}>View Soil</button>
+        <button className="action-button voice-button" onClick={() => goToPage("/voiceinput")}>
+          <i className="fas fa-microphone"></i> ASK AGROVE FOR ADVICE
+        </button>
       </div>
 
-      {/* Recent Activity */}
+      
+      <div className="home-navigation">
+        <h3>Manage Farms, Fields, Crops & Soil</h3>
+        <div className="button-group">
+          <button onClick={() => goToPage("/add-farm")}>Add Farm</button>
+          <button onClick={() => goToPage("/add-fields")}>Add Field</button>
+          <button onClick={() => goToPage("/add-crops")}>Add Crop</button>
+          <button onClick={() => goToPage("/add-activity")}>Add Activity</button>
+          <button onClick={() => goToPage("/add-soil")}>Add Soil</button>
+        </div>
+
+        <h3>View Records</h3>
+        <div className="button-group">
+          <button onClick={() => goToPage("/farms")}>View Farms</button>
+          <button onClick={() => goToPage("/fields")}>View Fields</button>
+          <button onClick={() => goToPage("/crops")}>View Crops</button>
+          <button onClick={() => goToPage("/activities")}>View Activities</button>
+          <button onClick={() => goToPage("/soil")}>View Soil</button>
+        </div>
+      </div>
+
+      {/* Recent Activities */}
       <div className="recent-activity">
         <h3 className="activity-title">Recent Activity</h3>
 
-        {!token && <p className="activity-date">Login to view your activity</p>}
-
-        {token && activities.length === 0 && (
+        {activities.length === 0 ? (
           <p className="activity-date">No recent activity</p>
+        ) : (
+          activities.map((item, index) => (
+            <div className="activity-item" key={index}>
+              <span>{item.type}: {item.description}</span>
+              <span className="activity-date">
+                {new Date(item.date).toLocaleDateString()}
+              </span>
+            </div>
+          ))
         )}
-
-        {activities.map((item, index) => (
-          <div className="activity-item" key={index}>
-            <span>{item.type}: {item.description}</span>
-            <span className="activity-date">
-              {new Date(item.date).toLocaleDateString()}
-            </span>
-            <i className="fas fa-chevron-right"></i>
-          </div>
-        ))}
       </div>
     </div>
   );

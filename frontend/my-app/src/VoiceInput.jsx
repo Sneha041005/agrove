@@ -4,6 +4,8 @@ import "./styles.css";
 export default function VoiceInput() {
   const [typedText, setTypedText] = useState("");
   const [message, setMessage] = useState("");
+  const [answer, setAnswer] = useState(""); // Stores the advice from backend
+  const [loading, setLoading] = useState(false);
   const recognitionRef = useRef(null);
 
   useEffect(() => {
@@ -25,14 +27,15 @@ export default function VoiceInput() {
     recognition.onresult = (event) => {
       const speechResult = event.results[0][0].transcript;
       setMessage(`You said: "${speechResult}"`);
+      handleSubmitQuestion(speechResult);
     };
-    recognition.onerror = (event) =>
-      setMessage("Error: " + event.error);
+    recognition.onerror = (event) => setMessage("Error: " + event.error);
     recognition.onend = () => setMessage("Listening stopped.");
   }, []);
 
   const handleVoiceInput = () => {
     if (recognitionRef.current) {
+      setAnswer("");
       recognitionRef.current.start();
     }
   };
@@ -43,7 +46,30 @@ export default function VoiceInput() {
       return;
     }
     setMessage(`You typed: "${typedText}"`);
+    handleSubmitQuestion(typedText);
     setTypedText("");
+  };
+
+  const handleSubmitQuestion = async (question) => {
+    setLoading(true);
+    setAnswer(""); // Clear previous answer
+    try {
+      const res = await fetch("http://localhost:5000/api/advice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+
+      if (!res.ok) throw new Error("Failed to get advice");
+
+      const data = await res.json();
+      setAnswer(data.answer);
+    } catch (err) {
+      setAnswer("Error fetching advice. Try again later.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,7 +91,7 @@ export default function VoiceInput() {
 
         <p id="resultText" className="subtitle">{message}</p>
 
-        {/*Manual Text Input */}
+        {/* Manual Text Input */}
         <div className="manual-input">
           <input
             type="text"
@@ -78,6 +104,15 @@ export default function VoiceInput() {
             Submit
           </button>
         </div>
+
+        {/* Display backend answer */}
+        {loading && <p className="answer-text">Getting advice...</p>}
+        {answer && (
+          <div className="answer-container">
+            <h3>Agrove Says:</h3>
+            <p>{answer}</p>
+          </div>
+        )}
       </main>
     </div>
   );
